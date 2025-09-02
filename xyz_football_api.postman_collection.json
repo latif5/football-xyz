@@ -61,7 +61,16 @@
             "header": [
               {"key": "Authorization", "value": "Bearer {{token}}"}
             ],
-            "url": {"raw": "{{base_url}}/api/teams?page=1", "host": ["{{base_url}}"], "path": ["api","teams"], "query": [{"key": "page", "value": "1"}]}
+            "description": "Supports per_page values: 15, 25, 50, 100. Response schema: {status, data: [items], meta: {current_page, per_page, total, last_page}}",
+            "url": {
+              "raw": "{{base_url}}/api/teams?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["api","teams"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "25"}
+              ]
+            }
           }
         },
         {
@@ -128,7 +137,16 @@
           "request": {
             "method": "GET",
             "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
-            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players?page=1", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players"], "query": [{"key":"page","value":"1"}]}
+            "description": "Supports per_page values: 15, 25, 50, 100. Response schema: {status, data: [items], meta: {current_page, per_page, total, last_page}}",
+            "url": {
+              "raw": "{{base_url}}/api/teams/{{team_id}}/players?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["api","teams","{{team_id}}","players"],
+              "query": [
+                {"key":"page","value":"1"},
+                {"key":"per_page","value":"25"}
+              ]
+            }
           }
         },
         {
@@ -179,7 +197,16 @@
           "request": {
             "method": "GET",
             "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
-            "url": {"raw": "{{base_url}}/api/matches?sort=-start_time", "host": ["{{base_url}}"], "path": ["api","matches"], "query": [{"key": "sort", "value": "-start_time"}]}
+            "description": "Supports per_page values: 15, 25, 50, 100. Response schema: {status, data: [items], meta: {current_page, per_page, total, last_page}}",
+            "url": {
+              "raw": "{{base_url}}/api/matches?sort=-start_time&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["api","matches"],
+              "query": [
+                {"key": "sort", "value": "-start_time"},
+                {"key": "per_page", "value": "25"}
+              ]
+            }
           }
         },
         {

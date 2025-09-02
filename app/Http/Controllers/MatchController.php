@@ -16,6 +16,9 @@ class MatchController extends Controller
 {
     public function index(Request $request)
     {
+        $perPageInput = (int) $request->query('per_page', 15);
+        $perPage = in_array($perPageInput, [15, 25, 50, 100], true) ? $perPageInput : 15;
+
         $query = FootballMatch::query()
             ->with(['homeTeam','awayTeam'])
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->string('status')))
@@ -27,8 +30,17 @@ class MatchController extends Controller
                 $q->orderBy($col, $dir);
             }, fn($q) => $q->orderBy('start_time','desc'));
 
-        $matches = $query->paginate($request->integer('per_page', 15));
-        return response()->json(['status' => 'ok', 'data' => $matches]);
+        $matches = $query->paginate($perPage);
+        return response()->json([
+            'status' => 'ok',
+            'data' => $matches->items(),
+            'meta' => [
+                'current_page' => $matches->currentPage(),
+                'per_page' => $matches->perPage(),
+                'total' => $matches->total(),
+                'last_page' => $matches->lastPage(),
+            ],
+        ]);
     }
 
     public function store(MatchStoreRequest $request)

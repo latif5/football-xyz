@@ -12,11 +12,23 @@ class TeamController extends Controller
 {
     public function index(Request $request)
     {
+        $perPageInput = (int) $request->query('per_page', 15);
+        $perPage = in_array($perPageInput, [15, 25, 50, 100], true) ? $perPageInput : 15;
+
         $teams = Team::query()
             ->when($request->filled('city'), fn($q) => $q->where('city', $request->string('city')))
             ->orderBy('name')
-            ->paginate($request->integer('per_page', 15));
-        return response()->json(['status' => 'ok', 'data' => $teams]);
+            ->paginate($perPage);
+        return response()->json([
+            'status' => 'ok',
+            'data' => $teams->items(),
+            'meta' => [
+                'current_page' => $teams->currentPage(),
+                'per_page' => $teams->perPage(),
+                'total' => $teams->total(),
+                'last_page' => $teams->lastPage(),
+            ],
+        ]);
     }
 
     public function store(TeamStoreRequest $request)

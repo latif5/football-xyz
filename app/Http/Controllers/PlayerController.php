@@ -13,10 +13,22 @@ class PlayerController extends Controller
 {
     public function index(Team $team, Request $request)
     {
+        $perPageInput = (int) $request->query('per_page', 15);
+        $perPage = in_array($perPageInput, [15, 25, 50, 100], true) ? $perPageInput : 15;
+
         $players = $team->players()
             ->orderBy('shirt_number')
-            ->paginate($request->integer('per_page', 15));
-        return response()->json(['status' => 'ok', 'data' => $players]);
+            ->paginate($perPage);
+        return response()->json([
+            'status' => 'ok',
+            'data' => $players->items(),
+            'meta' => [
+                'current_page' => $players->currentPage(),
+                'per_page' => $players->perPage(),
+                'total' => $players->total(),
+                'last_page' => $players->lastPage(),
+            ],
+        ]);
     }
 
     public function store(Team $team, PlayerStoreRequest $request)
