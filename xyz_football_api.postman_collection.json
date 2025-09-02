@@ -1,0 +1,264 @@
+{
+  "info": {
+    "_postman_id": "7a8db9a2-1f5d-4a3a-b0c9-xyzfootball",
+    "name": "XYZ Football API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for XYZ Football Backend REST API"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin\",\n  \"password\": \"passwordDefault\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "List Teams",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {"raw": "{{base_url}}/api/teams?page=1", "host": ["{{base_url}}"], "path": ["api","teams"], "query": [{"key": "page", "value": "1"}]}
+          }
+        },
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Team A\",\n  \"founded_year\": 1990,\n  \"stadium_address\": \"Jl. Stadion No.1\",\n  \"city\": \"Jakarta\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/teams", "host": ["{{base_url}}"], "path": ["api","teams"]}
+          }
+        },
+        {
+          "name": "Get Team",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}", "host": ["{{base_url}}"], "path": ["api","teams", "{{team_id}}"]}
+          }
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Team A Updated\",\n  \"city\": \"Bandung\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}"]}
+          }
+        },
+        {
+          "name": "Delete Team",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}"]}
+          }
+        },
+        {
+          "name": "Restore Team",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/restore", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","restore"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Players",
+      "item": [
+        {
+          "name": "List Players in Team",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players?page=1", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players"], "query": [{"key":"page","value":"1"}]}
+          }
+        },
+        {
+          "name": "Add Player to Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"height\": 180,\n  \"weight\": 75,\n  \"position\": \"forward\",\n  \"shirt_number\": 9\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players"]}
+          }
+        },
+        {
+          "name": "Update Player",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"midfielder\",\n  \"shirt_number\": 10\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players","{{player_id}}"]}
+          }
+        },
+        {
+          "name": "Delete Player",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players","{{player_id}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matches",
+      "item": [
+        {
+          "name": "List Matches",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches?sort=-start_time", "host": ["{{base_url}}"], "path": ["api","matches"], "query": [{"key": "sort", "value": "-start_time"}]}
+          }
+        },
+        {
+          "name": "Create Match",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"home_team_id\": 1,\n  \"away_team_id\": 2,\n  \"start_time\": \"2025-09-05T13:00:00Z\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/matches", "host": ["{{base_url}}"], "path": ["api","matches"]}
+          }
+        },
+        {
+          "name": "Get Match",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}"]}
+          }
+        },
+        {
+          "name": "Update Match",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"start_time\": \"2025-09-05T15:00:00Z\"\n}"},
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "Finalize Match",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"home_score\": 2,\n  \"away_score\": 1,\n  \"goals\": [\n    {\n      \"player_id\": 1,\n      \"team_id\": 1,\n      \"minute\": 23,\n      \"own_goal\": false\n    },\n    {\n      \"player_id\": 2,\n      \"team_id\": 2,\n      \"minute\": 45,\n      \"own_goal\": false\n    },\n    {\n      \"player_id\": 3,\n      \"team_id\": 1,\n      \"minute\": 88,\n      \"own_goal\": false\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/finalize", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","finalize"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Match Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/report", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","report"]}
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000"},
+    {"key": "token", "value": ""},
+    {"key": "team_id", "value": "1"},
+    {"key": "player_id", "value": "1"},
+    {"key": "match_id", "value": "1"}
+  ]
+}
