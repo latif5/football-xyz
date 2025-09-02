@@ -20,12 +20,14 @@ use App\Http\Controllers\ReportController;
 
 Route::get('/health', fn () => response()->json(['status' => 'ok']))->name('api.health');
 
+// Public routes (throttled)
 Route::middleware(['throttle:api'])->group(function () {
     Route::get('/ping', fn () => response()->json(['pong' => true]));
-
-    // Auth
     Route::post('/auth/login', [AuthController::class, 'login']);
+});
 
+// Protected routes (JWT + throttle)
+Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     // Teams
     Route::get('/teams', [TeamController::class, 'index']);
     Route::post('/teams', [TeamController::class, 'store']);
