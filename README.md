@@ -36,6 +36,11 @@ DB_PORT=5432
 DB_DATABASE=football_xyz
 DB_USERNAME=postgres
 DB_PASSWORD=
+
+# Recommended local dev settings
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
 ```
 
 2) Install PHP dependencies:
@@ -126,6 +131,21 @@ Full, importable Postman collection: `xyz_football_api.postman_collection.json`
 - Soft deletes are enabled for domain models; use restore endpoints where applicable.
 - Results finalization is atomic; finished matches are immutable.
 - File uploads (logos) are stored in `storage/app/public/logos` and served from `/storage/logos/...`.
+
+## Troubleshooting
+
+- **Rate limiter [api] is not defined**
+  - This project defines the limiter in `App\\Providers\\AppServiceProvider::boot()`.
+  - Ensure server is restarted after pulling changes.
+  - Use a file cache locally to avoid DB cache errors:
+    - In `.env`: `CACHE_STORE=file`, `SESSION_DRIVER=file`, `QUEUE_CONNECTION=sync`
+    - Then run:
+      ```
+      php artisan config:clear
+      php artisan route:clear
+      php artisan view:clear
+      php artisan cache:clear
+      ```
 
 ---
 
