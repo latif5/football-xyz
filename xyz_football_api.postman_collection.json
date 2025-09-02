@@ -249,6 +249,22 @@
             "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
             "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/report", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","report"]}
           }
+        },
+        {
+          "name": "Top Scorers",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/reports/top-scorers?limit=10", "host": ["{{base_url}}"], "path": ["api","reports","top-scorers"], "query": [{"key":"limit","value":"10"}]}
+          }
+        },
+        {
+          "name": "Team Wins",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/reports/team-wins?limit=10", "host": ["{{base_url}}"], "path": ["api","reports","team-wins"], "query": [{"key":"limit","value":"10"}]}
+          }
         }
       ]
     }
