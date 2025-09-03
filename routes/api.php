@@ -6,6 +6,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\GoalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,13 +42,23 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     Route::post('/teams/{team}/players', [PlayerController::class, 'store']);
     Route::put('/teams/{team}/players/{player}', [PlayerController::class, 'update']);
     Route::delete('/teams/{team}/players/{player}', [PlayerController::class, 'destroy']);
+    Route::post('/teams/{team}/players/{player}/restore', [PlayerController::class, 'restore']);
 
     // Matches
     Route::get('/matches', [MatchController::class, 'index']);
     Route::post('/matches', [MatchController::class, 'store']);
     Route::get('/matches/{match}', [MatchController::class, 'show']);
     Route::put('/matches/{match}', [MatchController::class, 'update']);
+    Route::delete('/matches/{match}', [MatchController::class, 'destroy']);
+    Route::post('/matches/{match}/restore', [MatchController::class, 'restore']);
     Route::post('/matches/{match}/finalize', [MatchController::class, 'finalize']);
+
+    // Goals nested under matches
+    Route::get('/matches/{match}/goals', [GoalController::class, 'index']);
+    Route::post('/matches/{match}/goals', [GoalController::class, 'store']);
+    Route::put('/matches/{match}/goals/{goal}', [GoalController::class, 'update']);
+    Route::delete('/matches/{match}/goals/{goal}', [GoalController::class, 'destroy']);
+    Route::post('/matches/{match}/goals/{goal}/restore', [GoalController::class, 'restore']);
 
     // Reports
     Route::get('/matches/{match}/report', [ReportController::class, 'matchReport']);

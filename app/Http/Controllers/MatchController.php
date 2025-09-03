@@ -121,4 +121,17 @@ class MatchController extends Controller
         $match->load('goals');
         return response()->json(['status' => 'ok', 'data' => $match]);
     }
+
+    public function destroy(FootballMatch $match)
+    {
+        $match->delete();
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function restore($match)
+    {
+        $restored = FootballMatch::withTrashed()->findOrFail($match);
+        $restored->restore();
+        return response()->json(['status' => 'ok', 'data' => $restored]);
+    }
 }

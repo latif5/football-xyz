@@ -70,4 +70,11 @@ class PlayerController extends Controller
         $player->delete();
         return response()->json(['status' => 'ok']);
     }
+
+    public function restore(Team $team, $player)
+    {
+        $restored = Player::withTrashed()->where('team_id', $team->id)->findOrFail($player);
+        $restored->restore();
+        return response()->json(['status' => 'ok', 'data' => $restored]);
+    }
 }

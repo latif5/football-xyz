@@ -112,6 +112,24 @@
           }
         },
         {
+          "name": "Update Team (with Logo)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "name", "value": "Team A Updated", "type": "text"},
+                {"key": "city", "value": "Bandung", "type": "text"},
+                {"key": "logo", "type": "file", "src": ["/absolute/path/to/logo.png"]}
+              ]
+            },
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}"]}
+          }
+        },
+        {
           "name": "Delete Team",
           "request": {
             "method": "DELETE",
@@ -186,6 +204,14 @@
             "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
             "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players","{{player_id}}"]}
           }
+        },
+        {
+          "name": "Restore Player",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/teams/{{team_id}}/players/{{player_id}}/restore", "host": ["{{base_url}}"], "path": ["api","teams","{{team_id}}","players","{{player_id}}","restore"]}
+          }
         }
       ]
     },
@@ -242,6 +268,75 @@
             ],
             "body": {"mode": "raw", "raw": "{\n  \"start_time\": \"2025-09-05T15:00:00Z\"\n}"},
             "url": {"raw": "{{base_url}}/api/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}"]}
+          }
+        },
+        {
+          "name": "Delete Match",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}"]}
+          }
+        },
+        {
+          "name": "Restore Match",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/restore", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","restore"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Goals (by Match)",
+      "item": [
+        {
+          "name": "List Goals",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/goals", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","goals"]}
+          }
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"player_id\": 1,\n  \"team_id\": 1,\n  \"minute\": 23,\n  \"own_goal\": false\n}"},
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/goals", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","goals"]}
+          }
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"minute\": 90\n}"},
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/goals/{{goal_id}}", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","goals","{{goal_id}}"]}
+          }
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/goals/{{goal_id}}", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","goals","{{goal_id}}"]}
+          }
+        },
+        {
+          "name": "Restore Goal",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/goals/{{goal_id}}/restore", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","goals","{{goal_id}}","restore"]}
           }
         }
       ]
@@ -313,6 +408,7 @@
     {"key": "token", "value": ""},
     {"key": "team_id", "value": "1"},
     {"key": "player_id", "value": "1"},
-    {"key": "match_id", "value": "1"}
+    {"key": "match_id", "value": "1"},
+    {"key": "goal_id", "value": "1"}
   ]
 }
