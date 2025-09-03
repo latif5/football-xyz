@@ -8,6 +8,7 @@ use App\Models\Player;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class ReportController extends Controller
 {
@@ -25,6 +26,82 @@ class ReportController extends Controller
             'goals' => $match->goals,
         ];
         return response()->json(['status' => 'ok', 'data' => $data]);
+    }
+
+    public function matchReportPdf(Request $request, FootballMatch $match)
+    {
+        // Ensure DomPDF is available
+        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'PDF generator not installed. Please run: composer require barryvdh/laravel-dompdf',
+            ], 501);
+        }
+
+        $match->load(['homeTeam','awayTeam','goals' => function($q){ $q->orderBy('minute'); }, 'goals.player', 'goals.team']);
+
+        // Build running score per goal (used for table)
+        $homeId = $match->home_team_id;
+        $awayId = $match->away_team_id;
+        $homeCount = 0; $awayCount = 0;
+        $goalRows = [];
+        foreach ($match->goals as $g) {
+            if ($g->own_goal) {
+                // Own goals count for the opponent
+                if ((int) $g->team_id === (int) $homeId) {
+                    $awayCount++;
+                } else {
+                    $homeCount++;
+                }
+            } else {
+                if ((int) $g->team_id === (int) $homeId) {
+                    $homeCount++;
+                } else {
+                    $awayCount++;
+                }
+            }
+            $goalRows[] = [
+                'minute' => (int) $g->minute,
+                'player_name' => $g->player->name ?? 'N/A',
+                'team_name' => $g->team->name ?? 'N/A',
+                'type' => $g->own_goal ? 'Own Goal' : 'Regular',
+                'score' => sprintf('%d-%d', $homeCount, $awayCount),
+            ];
+        }
+        // No chart: removed to simplify PDF and avoid external calls
+
+        // Build simple team logo placeholders using ui-avatars and embed as data URIs
+        $homeLogoDataUri = null; $awayLogoDataUri = null;
+        try {
+            $homeLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->homeTeam->name) . '&background=1f77b4&color=fff&rounded=true&size=128&format=png';
+            $awayLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->awayTeam->name) . '&background=ff7f0e&color=fff&rounded=true&size=128&format=png';
+            $h = Http::timeout(10)->get($homeLogoUrl);
+            if ($h->successful() && !empty($h->body())) {
+                $homeLogoDataUri = 'data:image/png;base64,' . base64_encode($h->body());
+            }
+            $a = Http::timeout(10)->get($awayLogoUrl);
+            if ($a->successful() && !empty($a->body())) {
+                $awayLogoDataUri = 'data:image/png;base64,' . base64_encode($a->body());
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        // Structure data for Blade (scoreboard logos + goal rows)
+        $viewData = [
+            'match' => $match,
+            'homeTeam' => $match->homeTeam,
+            'awayTeam' => $match->awayTeam,
+            'goalRows' => $goalRows,
+            'homeLogoDataUri' => $homeLogoDataUri,
+            'awayLogoDataUri' => $awayLogoDataUri,
+        ];
+
+        // Render PDF
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.match', $viewData)
+            ->setPaper('a4');
+        $filename = sprintf('match-%d-%s-vs-%s.pdf', $match->id, str_replace(' ', '-', strtolower($match->homeTeam->name)), str_replace(' ', '-', strtolower($match->awayTeam->name)));
+        return $pdf->download($filename);
     }
 
     public function topScorers(Request $request)

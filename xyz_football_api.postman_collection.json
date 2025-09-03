@@ -278,6 +278,17 @@
           }
         },
         {
+          "name": "Match Report (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Accept", "value": "application/pdf"}
+            ],
+            "url": {"raw": "{{base_url}}/api/matches/{{match_id}}/report.pdf", "host": ["{{base_url}}"], "path": ["api","matches","{{match_id}}","report.pdf"]}
+          }
+        },
+        {
           "name": "Top Scorers",
           "request": {
             "method": "GET",

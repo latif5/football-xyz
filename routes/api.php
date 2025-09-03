@@ -51,6 +51,7 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
 
     // Reports
     Route::get('/matches/{match}/report', [ReportController::class, 'matchReport']);
+    Route::get('/matches/{match}/report.pdf', [ReportController::class, 'matchReportPdf']);
     Route::get('/reports/top-scorers', [ReportController::class, 'topScorers']);
     Route::get('/reports/team-wins', [ReportController::class, 'teamWins']);
 });
