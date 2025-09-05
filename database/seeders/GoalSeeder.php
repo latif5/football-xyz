@@ -12,7 +12,6 @@ class GoalSeeder extends Seeder
 {
     public function run(): void
     {
-        // Match: Manchester United 2-1 Liverpool
         $mu = Team::where('name', 'Manchester United')->first();
         $liv = Team::where('name', 'Liverpool')->first();
         $match1 = FootballMatch::where('home_team_id', optional($mu)->id)
@@ -29,7 +28,6 @@ class GoalSeeder extends Seeder
             $this->createGoal($match1->id, $bruno?->id, $mu->id, 88, false);
         }
 
-        // Match: Chelsea 1-1 Arsenal
         $che = Team::where('name', 'Chelsea')->first();
         $ars = Team::where('name', 'Arsenal')->first();
         $match2 = FootballMatch::where('home_team_id', optional($che)->id)

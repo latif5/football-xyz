@@ -34,7 +34,6 @@ class PlayerController extends Controller
     public function store(Team $team, PlayerStoreRequest $request)
     {
         $data = $request->validated();
-        // Enforce unique shirt number per team at application layer (DB also enforces)
         if (Player::where('team_id', $team->id)->where('shirt_number', $data['shirt_number'])->exists()) {
             return response()->json(['status' => 'error', 'errors' => ['shirt_number' => ['Shirt number must be unique within a team.']]], 422);
         }

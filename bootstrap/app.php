@@ -14,21 +14,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Ensure API unauthenticated requests return 401 JSON (no redirect)
         $middleware->alias([
             'auth' => App\Http\Middleware\Authenticate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Ensure unauthenticated API requests do not attempt to redirect to a non-existent 'login' route
         $exceptions->renderable(function (AuthenticationException $e, Request $request) {
-            // Treat any API route as JSON, including routes that return files like PDFs
             if ($request->is('api/*')) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Unauthenticated',
                 ], 401);
             }
-            return null; // Fall back to default for non-API routes
+            return null;
         });
     })->create();

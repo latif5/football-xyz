@@ -46,7 +46,6 @@ class MatchController extends Controller
     public function store(MatchStoreRequest $request)
     {
         $data = $request->validated();
-        // Ensure different teams (already validated) and teams exist
         $match = FootballMatch::create([
             'home_team_id' => $data['home_team_id'],
             'away_team_id' => $data['away_team_id'],
@@ -85,7 +84,6 @@ class MatchController extends Controller
         $data = $request->validated();
         $homeId = $match->home_team_id; $awayId = $match->away_team_id;
 
-        // Validate that each goal belongs to a player from either team and team_id matches
         foreach ($data['goals'] as $g) {
             $player = Player::find($g['player_id']);
             if (!$player || !in_array($player->team_id, [$homeId, $awayId], true)) {
@@ -97,7 +95,6 @@ class MatchController extends Controller
         }
 
         DB::transaction(function () use ($match, $data) {
-            // Clear existing goals if any (in case of re-finalization attempt before status lock)
             $match->goals()->delete();
 
             foreach ($data['goals'] as $g) {

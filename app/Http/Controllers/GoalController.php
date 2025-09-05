@@ -23,7 +23,6 @@ class GoalController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Finished match is immutable'], 422);
         }
         $data = $request->validated();
-        // Validate player belongs to team and team is part of the match
         $player = Player::find($data['player_id']);
         if (!$player || !in_array($player->team_id, [$match->home_team_id, $match->away_team_id], true)) {
             return response()->json(['status' => 'error', 'message' => 'Player must belong to one of the match teams'], 422);
@@ -49,7 +48,6 @@ class GoalController extends Controller
             if (!$player || !in_array($player->team_id, [$match->home_team_id, $match->away_team_id], true)) {
                 return response()->json(['status' => 'error', 'message' => 'Player must belong to one of the match teams'], 422);
             }
-            // If team_id is provided, it must match player team. If not provided, align with player's team.
             if (isset($data['team_id']) && $data['team_id'] !== $player->team_id) {
                 return response()->json(['status' => 'error', 'message' => 'team_id must match player team'], 422);
             }
@@ -77,7 +75,6 @@ class GoalController extends Controller
 
     public function restore(FootballMatch $match, $goal)
     {
-        // Allow restoring a soft-deleted goal of this match
         $goalModel = Goal::withTrashed()->where('match_id', $match->id)->findOrFail($goal);
         if ($match->status === 'finished') {
             return response()->json(['status' => 'error', 'message' => 'Finished match is immutable'], 422);

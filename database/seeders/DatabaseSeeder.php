@@ -12,12 +12,8 @@ use Database\Seeders\GoalSeeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Seed initial admin user per project requirements
         User::query()->updateOrCreate(
             ['email' => 'admin'],
             [
@@ -26,7 +22,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Domain seeders with realistic data
         $this->call([
             TeamSeeder::class,
             PlayerSeeder::class,

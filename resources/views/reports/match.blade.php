@@ -23,7 +23,7 @@
         .scoreboard-cell.center { text-align: center; width: 1%; white-space: nowrap; }
         .scoreboard-cell.right { text-align: right; }
         .team { display: inline-block; }
-        .team .logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; }
+        .team .logo { height: 40px; border-radius: 50%; object-fit: cover; object-position: center; display: block; }
         .team .name { display: block; margin-top: 6px; font-size: 12px; color: #555; line-height: 1.2; }
         .team.left .name { text-align: left; }
         .team.right .name { text-align: right; }

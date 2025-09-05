@@ -11,7 +11,6 @@ class MatchSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ensure teams exist
         $teamA = Team::where('name', 'Manchester United')->first();
         $teamB = Team::where('name', 'Liverpool')->first();
         $teamC = Team::where('name', 'Chelsea')->first();

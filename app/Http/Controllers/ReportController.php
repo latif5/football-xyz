@@ -31,7 +31,6 @@ class ReportController extends Controller
 
     public function matchReportPdf(Request $request, FootballMatch $match)
     {
-        // Ensure DomPDF is available
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             return response()->json([
                 'status' => 'error',
@@ -41,14 +40,12 @@ class ReportController extends Controller
 
         $match->load(['homeTeam','awayTeam','goals' => function($q){ $q->orderBy('minute'); }, 'goals.player', 'goals.team']);
 
-        // Build running score per goal (used for table)
         $homeId = $match->home_team_id;
         $awayId = $match->away_team_id;
         $homeCount = 0; $awayCount = 0;
         $goalRows = [];
         foreach ($match->goals as $g) {
             if ($g->own_goal) {
-                // Own goals count for the opponent
                 if ((int) $g->team_id === (int) $homeId) {
                     $awayCount++;
                 } else {
@@ -69,12 +66,9 @@ class ReportController extends Controller
                 'score' => sprintf('%d-%d', $homeCount, $awayCount),
             ];
         }
-        // No chart: removed to simplify PDF and avoid external calls
 
-        // Prefer uploaded team logos (stored in public disk). Fallback to ui-avatars.
         $homeLogoDataUri = null; $awayLogoDataUri = null;
         try {
-            // Home team logo from storage if available
             if (!empty($match->homeTeam->logo)) {
                 $path = $match->homeTeam->logo;
                 if (Storage::disk('public')->exists($path)) {
@@ -87,7 +81,7 @@ class ReportController extends Controller
                     }
                 }
             }
-            // Away team logo from storage if available
+
             if (!empty($match->awayTeam->logo)) {
                 $path = $match->awayTeam->logo;
                 if (Storage::disk('public')->exists($path)) {
@@ -101,26 +95,66 @@ class ReportController extends Controller
                 }
             }
 
-            // Fallback to generated avatars if no uploaded logo
+            $makeLetterLogo = function (string $letter, string $bgHex, string $fgHex = 'ffffff'): ?string {
+                if (!function_exists('imagecreatetruecolor')) { return null; }
+                $size = 128;
+                $im = imagecreatetruecolor($size, $size);
+                if (!$im) { return null; }
+                $bgHex = ltrim($bgHex, '#');
+                $fgHex = ltrim($fgHex, '#');
+                $bg = imagecolorallocate($im, hexdec(substr($bgHex,0,2)), hexdec(substr($bgHex,2,2)), hexdec(substr($bgHex,4,2)));
+                $fg = imagecolorallocate($im, hexdec(substr($fgHex,0,2)), hexdec(substr($fgHex,2,2)), hexdec(substr($fgHex,4,2)));
+                imagefilledrectangle($im, 0, 0, $size, $size, $bg);
+                // Draw circle mask (to look like rounded avatar)
+                if (function_exists('imagealphablending') && function_exists('imagesavealpha')) {
+                    imagealphablending($im, true);
+                    imagesavealpha($im, true);
+                }
+                // Draw text (using built-in GD font)
+                $letter = mb_strtoupper(mb_substr($letter, 0, 1));
+                $font = 5; // built-in font size (1..5)
+                $textW = imagefontwidth($font) * strlen($letter);
+                $textH = imagefontheight($font);
+                // Scale text by drawing larger? Built-in fonts are small; instead we can place it centered and accept smaller size
+                $x = (int) (($size - $textW) / 2);
+                $y = (int) (($size - $textH) / 2);
+                imagestring($im, $font, $x, $y, $letter, $fg);
+                // Output as PNG to buffer
+                ob_start();
+                imagepng($im);
+                $pngData = ob_get_clean();
+                imagedestroy($im);
+                if (!$pngData) { return null; }
+                return 'data:image/png;base64,' . base64_encode($pngData);
+            };
+
+            // Fallback to first-letter generated PNG; finally to ui-avatars
             if (empty($homeLogoDataUri)) {
-                $homeLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->homeTeam->name) . '&background=1f77b4&color=fff&rounded=true&size=128&format=png';
-                $h = Http::timeout(10)->get($homeLogoUrl);
-                if ($h->successful() && !empty($h->body())) {
-                    $homeLogoDataUri = 'data:image/png;base64,' . base64_encode($h->body());
+                $homeLetter = (string) ($match->homeTeam->name ?? 'H');
+                $homeLogoDataUri = $makeLetterLogo($homeLetter, '1f77b4', 'ffffff');
+                if (empty($homeLogoDataUri)) {
+                    $homeLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->homeTeam->name) . '&background=1f77b4&color=fff&rounded=true&size=128&format=png';
+                    $h = Http::timeout(10)->get($homeLogoUrl);
+                    if ($h->successful() && !empty($h->body())) {
+                        $homeLogoDataUri = 'data:image/png;base64,' . base64_encode($h->body());
+                    }
                 }
             }
             if (empty($awayLogoDataUri)) {
-                $awayLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->awayTeam->name) . '&background=ff7f0e&color=fff&rounded=true&size=128&format=png';
-                $a = Http::timeout(10)->get($awayLogoUrl);
-                if ($a->successful() && !empty($a->body())) {
-                    $awayLogoDataUri = 'data:image/png;base64,' . base64_encode($a->body());
+                $awayLetter = (string) ($match->awayTeam->name ?? 'A');
+                $awayLogoDataUri = $makeLetterLogo($awayLetter, 'ff7f0e', 'ffffff');
+                if (empty($awayLogoDataUri)) {
+                    $awayLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->awayTeam->name) . '&background=ff7f0e&color=fff&rounded=true&size=128&format=png';
+                    $a = Http::timeout(10)->get($awayLogoUrl);
+                    if ($a->successful() && !empty($a->body())) {
+                        $awayLogoDataUri = 'data:image/png;base64,' . base64_encode($a->body());
+                    }
                 }
             }
         } catch (\Throwable $e) {
-            // Ignore image loading errors; proceed without logos.
+
         }
 
-        // Structure data for Blade (scoreboard logos + goal rows)
         $viewData = [
             'match' => $match,
             'homeTeam' => $match->homeTeam,
@@ -130,7 +164,6 @@ class ReportController extends Controller
             'awayLogoDataUri' => $awayLogoDataUri,
         ];
 
-        // Render PDF
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.match', $viewData)
             ->setPaper('a4');
         $filename = sprintf('match-%d-%s-vs-%s.pdf', $match->id, str_replace(' ', '-', strtolower($match->homeTeam->name)), str_replace(' ', '-', strtolower($match->awayTeam->name)));
