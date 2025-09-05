@@ -17,6 +17,7 @@ Backend REST API built with Laravel 12 for managing football teams, players, fix
 - Composer
 - PostgreSQL (running locally)
 - Node optional (not required to run API)
+- Redis (recommended) for cache, rate limiting, and queues
 
 ## Quick start
 
@@ -37,10 +38,16 @@ DB_DATABASE=football_xyz
 DB_USERNAME=postgres
 DB_PASSWORD=
 
-# Recommended local dev settings
-CACHE_STORE=file
-SESSION_DRIVER=file
-QUEUE_CONNECTION=sync
+# Cache/Queue/Session (Recommended: Redis)
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+
+# Redis (defaults)
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD=null
 ```
 
 2) Install PHP dependencies:
@@ -81,6 +88,63 @@ php artisan serve
 ```
 php artisan octane:start --server=roadrunner
 ```
+
+## Redis Setup
+
+Redis is used for:
+
+- Caching match reports and leaderboards (improves p95 latency)
+- Rate limiting storage (scales across instances)
+- Queues for heavy/async jobs (e.g., PDF generation, cache warming)
+
+Steps:
+
+1) Install Redis server locally (e.g., via brew):
+
+```
+brew install redis
+brew services start redis
+```
+
+2) PHP Redis client options:
+
+- Recommended: phpredis extension (faster)
+  - Ensure it's installed and enabled in your PHP runtime
+- Alternative: Predis (pure PHP)
+  - `composer require predis/predis`
+
+3) Configure `.env` (see above). Then clear caches:
+
+```
+php artisan config:clear
+php artisan cache:clear
+```
+
+4) (Optional) Laravel Horizon for monitoring queues:
+
+```
+composer require laravel/horizon
+php artisan vendor:publish --provider="Laravel\Horizon\HorizonServiceProvider"
+php artisan horizon
+```
+
+## Caching and Invalidation
+
+This project caches:
+
+- Match report JSON and PDF view data using tags `match:{id}`, `team:{home}`, `team:{away}`
+- Leaderboards: top scorers `leaderboard:top_scorers:{limit}` and team wins `leaderboard:team_wins:{limit}`
+
+Recommended invalidation hooks on write operations (to keep data fresh):
+
+- On match finalize / score or status update / goals create-update-delete for a match `{id}`:
+  - `Cache::tags(["match:{id}", "team:{home_id}", "team:{away_id}"]).flush();`
+  - `Cache::tags(['leaderboard:top_scorers','leaderboard:team_wins']).flush();`
+
+TTL defaults:
+
+- Match report data: 10 minutes
+- Leaderboards: 5 minutes
 
 ## Authentication
 
@@ -137,8 +201,8 @@ Full, importable Postman collection: `xyz_football_api.postman_collection.json`
 - **Rate limiter [api] is not defined**
   - This project defines the limiter in `App\\Providers\\AppServiceProvider::boot()`.
   - Ensure server is restarted after pulling changes.
-  - Use a file cache locally to avoid DB cache errors:
-    - In `.env`: `CACHE_STORE=file`, `SESSION_DRIVER=file`, `QUEUE_CONNECTION=sync`
+  - If not using Redis, you may switch to file drivers locally:
+    - In `.env`: `CACHE_DRIVER=file`, `SESSION_DRIVER=file`, `QUEUE_CONNECTION=sync`
     - Then run:
       ```
       php artisan config:clear

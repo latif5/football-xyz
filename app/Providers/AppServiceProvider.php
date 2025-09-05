@@ -18,6 +18,11 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             $key = optional($request->user())->getAuthIdentifier() ?: $request->ip();
+            if ($this->app->environment(['local', 'testing'])) {
+                return [
+                    Limit::perMinute(1000)->by($key),
+                ];
+            }
             return [
                 Limit::perMinute(60)->by($key),
             ];
