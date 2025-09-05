@@ -114,13 +114,14 @@
         {
           "name": "Update Team (with Logo)",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {"key": "Authorization", "value": "Bearer {{token}}"}
             ],
             "body": {
               "mode": "formdata",
               "formdata": [
+                {"key": "_method", "value": "PUT", "type": "text"},
                 {"key": "name", "value": "Team A Updated", "type": "text"},
                 {"key": "city", "value": "Bandung", "type": "text"},
                 {"key": "logo", "type": "file", "src": ["/absolute/path/to/logo.png"]}

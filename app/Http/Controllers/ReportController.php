@@ -9,6 +9,7 @@ use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
@@ -70,21 +71,53 @@ class ReportController extends Controller
         }
         // No chart: removed to simplify PDF and avoid external calls
 
-        // Build simple team logo placeholders using ui-avatars and embed as data URIs
+        // Prefer uploaded team logos (stored in public disk). Fallback to ui-avatars.
         $homeLogoDataUri = null; $awayLogoDataUri = null;
         try {
-            $homeLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->homeTeam->name) . '&background=1f77b4&color=fff&rounded=true&size=128&format=png';
-            $awayLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->awayTeam->name) . '&background=ff7f0e&color=fff&rounded=true&size=128&format=png';
-            $h = Http::timeout(10)->get($homeLogoUrl);
-            if ($h->successful() && !empty($h->body())) {
-                $homeLogoDataUri = 'data:image/png;base64,' . base64_encode($h->body());
+            // Home team logo from storage if available
+            if (!empty($match->homeTeam->logo)) {
+                $path = $match->homeTeam->logo;
+                if (Storage::disk('public')->exists($path)) {
+                    $contents = Storage::disk('public')->get($path);
+                    $mime = null;
+                    try { $mime = Storage::disk('public')->mimeType($path); } catch (\Throwable $e) { /* ignore */ }
+                    if ($mime !== 'image/webp') {
+                        if (!$mime) { $mime = 'image/png'; }
+                        $homeLogoDataUri = 'data:' . $mime . ';base64,' . base64_encode($contents);
+                    }
+                }
             }
-            $a = Http::timeout(10)->get($awayLogoUrl);
-            if ($a->successful() && !empty($a->body())) {
-                $awayLogoDataUri = 'data:image/png;base64,' . base64_encode($a->body());
+            // Away team logo from storage if available
+            if (!empty($match->awayTeam->logo)) {
+                $path = $match->awayTeam->logo;
+                if (Storage::disk('public')->exists($path)) {
+                    $contents = Storage::disk('public')->get($path);
+                    $mime = null;
+                    try { $mime = Storage::disk('public')->mimeType($path); } catch (\Throwable $e) { /* ignore */ }
+                    if ($mime !== 'image/webp') {
+                        if (!$mime) { $mime = 'image/png'; }
+                        $awayLogoDataUri = 'data:' . $mime . ';base64,' . base64_encode($contents);
+                    }
+                }
+            }
+
+            // Fallback to generated avatars if no uploaded logo
+            if (empty($homeLogoDataUri)) {
+                $homeLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->homeTeam->name) . '&background=1f77b4&color=fff&rounded=true&size=128&format=png';
+                $h = Http::timeout(10)->get($homeLogoUrl);
+                if ($h->successful() && !empty($h->body())) {
+                    $homeLogoDataUri = 'data:image/png;base64,' . base64_encode($h->body());
+                }
+            }
+            if (empty($awayLogoDataUri)) {
+                $awayLogoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($match->awayTeam->name) . '&background=ff7f0e&color=fff&rounded=true&size=128&format=png';
+                $a = Http::timeout(10)->get($awayLogoUrl);
+                if ($a->successful() && !empty($a->body())) {
+                    $awayLogoDataUri = 'data:image/png;base64,' . base64_encode($a->body());
+                }
             }
         } catch (\Throwable $e) {
-            // ignore
+            // Ignore image loading errors; proceed without logos.
         }
 
         // Structure data for Blade (scoreboard logos + goal rows)
