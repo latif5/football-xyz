@@ -12,7 +12,7 @@
         .section { margin-top: 16px; }
         .section h3 { margin: 0 0 8px 0; font-size: 14px; }
         .table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .table th, .table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .table th, .table td { border: 1px solid #ddd; padding: 6px; text-align: left; border-radius: 4px; }
         .muted { color: #777; }
         .chip { display: inline-block; padding: 2px 6px; border-radius: 10px; background: #eee; font-size: 10px; }
         .chart { width: 100%; margin-top: 8px; }
@@ -36,9 +36,9 @@
     <div class="header">
         <div>
             <div class="title">Match Report</div>
-            <div class="subtitle">ID #{{ $match->id }} • {{ $match->start_time?->format('Y-m-d H:i') }} • Status: {{ ucfirst($match->status) }}</div>
+            <div class="subtitle">ID #{{ $match->id }} • {{ $match->start_time?->format('Y-m-d H:i') }} • Status Akhir: {{ $finalStatus ?? ucfirst($match->status) }}</div>
         </div>
-        <div class="score">{{ $homeTeam->name }} {{ $match->home_score }} — {{ $match->away_score }} {{ $awayTeam->name }}</div>
+        <div class="score">{{ $homeTeam->name }} — {{ $awayTeam->name }}</div>
     </div>
 
     <div class="section">
@@ -65,6 +65,52 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="section">
+        <h3>Ringkasan</h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th style="width: 30%">Jadwal Pertandingan</th>
+                    <td>{{ $match->start_time?->format('Y-m-d H:i') }}</td>
+                </tr>
+                <tr>
+                    <th>Tim Home</th>
+                    <td>{{ $homeTeam->name }}</td>
+                </tr>
+                <tr>
+                    <th>Tim Away</th>
+                    <td>{{ $awayTeam->name }}</td>
+                </tr>
+                <tr>
+                    <th>Skor Akhir</th>
+                    <td>{{ $match->home_score }} — {{ $match->away_score }}</td>
+                </tr>
+                <tr>
+                    <th>Status Akhir</th>
+                    <td>{{ $finalStatus ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Pencetak Gol Terbanyak (Laga Ini)</th>
+                    <td>
+                        @if(!empty($topScorer))
+                            {{ $topScorer['player_name'] }} ({{ $topScorer['goals'] }} gol)
+                        @else
+                            -
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <th>Akumulasi Kemenangan Tim Home (hingga laga ini)</th>
+                    <td>{{ $homeWinsUpTo ?? 0 }}</td>
+                </tr>
+                <tr>
+                    <th>Akumulasi Kemenangan Tim Away (hingga laga ini)</th>
+                    <td>{{ $awayWinsUpTo ?? 0 }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <div class="section">
